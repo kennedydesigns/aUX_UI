@@ -1,5 +1,5 @@
 /**
- * aUX.webui - A User Interface library for creating
+ * aUX.ui - A User Interface library for creating
  * 
  * @copyright 2011 - AppMobi
  * @author IDM
@@ -8,7 +8,6 @@
 if (!window.aUX)
 	aUX = {};
 aUX.domFired=false;
-
 document.addEventListener("DOMContentLoaded",function(){aUX.domFired=true;},false);
 aUX.ui = (function () {
 
@@ -154,6 +153,7 @@ aUX.ui = (function () {
                         x: "100%",
                         time: "0ms"
                     });
+					that.firstDiv.style.display="block";
                     if (that.activeDiv.title)
                         that.titleBar.innerHTML = that.activeDiv.title;
                     that.hideSplash();
@@ -198,9 +198,9 @@ aUX.ui = (function () {
 			}
 			//WE need to clone the div so we keep events
             var myDiv = tmp.cloneNode(false);
-			tmp.title="";
-			tmp.id="";
-			tmp.className="";
+			tmp.title=null;
+			tmp.id=null;
+			tmp.className=null;
 			myDiv.appendChild(tmp);
 			this.content.appendChild(myDiv);
             this.updateAnchors(tmp);
@@ -221,20 +221,24 @@ aUX.ui = (function () {
             var anchors = domEl.getElementsByTagName("a");
             var that = this;
             var theTransition;
+			
             for (var i = 0; i < anchors.length; i++) {
-                if (anchors[i].href.indexOf(":") != -1&&((anchors[i].href.indexOf("http:")!=0&&anchors[i].href.indexOf("https:")!=0)||anchors[i].href.indexOf("http://maps.google.com/maps")!=-1)&&anchors[i].href.indexOf("javascript:")==-1) { //allow execution of tel: and protocol handlers
+				if (anchors[i].href.indexOf(":") != -1&&((anchors[i].href.indexOf("http:")!=0&&anchors[i].href.indexOf("https:")!=0)||anchors[i].href.indexOf("http://maps.google.com/maps")!=-1)) { //allow execution of tel: and protocol handlers
+					if(anchors[i].href.indexOf("javascript:")!=0){
+					   anchors[i].oldonclick=anchors[i].onclick;
+					   anchors[i].oldhref=anchors[i].href;
+					   anchors[i].href="javascript:;";
 					
-					anchors[i].oldonclick=anchors[i].onclick;
-					anchors[i].oldhref=anchors[i].href;
-					anchors[i].href="javascript:;";
-					anchors[i].onclick=function(){
-						if(that.isAppMobi)
-						   AppMobi.device.launchExternal(this.oldhref);
-						else
-							window.open(this.oldhref);
-						if(typeof(this.oldonclick)=="function")
-						   this.oldonclick();  
+					   anchors[i].onclick=function(){
+						  if(that.isAppMobi)
+						     AppMobi.device.launchExternal(this.oldhref);
+						  else
+							 window.open(this.oldhref);
+						  if(typeof(this.oldonclick)=="function")
+						     this.oldonclick();  
+					   }
 					}
+					
                     continue;
                 }
                 anchors[i].oldhref = anchors[i].href;
@@ -305,13 +309,21 @@ aUX.ui = (function () {
             }
 
         },
-        updateOrientation: function (event) {
-            for (var i = 0; i < this.scrollingDivs.length; i++) {
-                this.scrollingDivs[i].scrollTo({
+		scrollToTop:function(id)
+		{
+			if(this.scrollingDivs[id]){
+				this.scrollingDivs[id].scrollTo({
                     x: 0,
                     y: 0
                 });
-            }
+			}
+		},
+        updateOrientation: function (event) {
+            for(var j in this.scrollingDivs)
+			{
+			   if(typeof(this.scrollingDivs[j])!=="function")
+			      this.scrollToTop(j);
+			}
             this.css3animate(this.activeDiv, {
                 x: "100%",
                 time: "0ms"
@@ -540,7 +552,9 @@ aUX.ui = (function () {
         hideMask: function () {
             $am("AMUI_mask").style.display = "none";
         },
-        slideTransition: function (oldDiv, currDiv, back) {
+       slideTransition: function (oldDiv, currDiv, back) {
+			oldDiv.style.display="block";
+			currDiv.style.display="block";
             var that = this
             if (back) {
                 that.css3animate(oldDiv, {
@@ -549,18 +563,26 @@ aUX.ui = (function () {
                     callback: function () {
                         that.css3animate(oldDiv, {
                             x: 0,
-                            time: "1ms"
+                            time: "1ms",
+							callback:function(){oldDiv.style.display='none';}
                         });
                     }
                 });
-                that.css3animate(currDiv, {
-                    x: "100%",
-                    time: "200ms"
+               that.css3animate(currDiv, {
+                    x: "0%",
+                    time: "1ms",
+                    callback: function () {
+                        that.css3animate(currDiv, {
+                            x: "100%",
+                            time: "200ms"
+                        });
+                    }
                 });
             } else {
                 that.css3animate(oldDiv, {
                     x: "0%",
-                    time: "200ms"
+                    time: "200ms",
+					callback:function(){oldDiv.style.display='none';}
                 });
                 that.css3animate(currDiv, {
                     x: "200%",
@@ -575,7 +597,8 @@ aUX.ui = (function () {
             }
         },
         slideUpTransition: function (oldDiv, currDiv, back) {
-
+		oldDiv.style.display="block";
+		currDiv.style.display="block";
             var that = this;
             if (back) {
                 that.css3animate(currDiv, {
@@ -591,7 +614,8 @@ aUX.ui = (function () {
                         that.css3animate(oldDiv, {
                             x: 0,
                             y: 0,
-                            time: "1ms"
+                            time: "1ms",
+							callback:function(){oldDiv.style.display='none';}
                         });
                         currDiv.style.zIndex = 2;
                         oldDiv.style.zIndex = 1;
@@ -607,7 +631,8 @@ aUX.ui = (function () {
                         that.css3animate(oldDiv, {
                             x: 0,
                             y: 0,
-                            time: "1ms"
+                            time: "1ms",
+							callback:function(){oldDiv.style.display='none';}
                         });
                     }
                 });
@@ -626,6 +651,8 @@ aUX.ui = (function () {
             }
         },
         slideDownTransition: function (oldDiv, currDiv, back) {
+			oldDiv.style.display="block";
+			currDiv.style.display="block";
             var that = this
             if (back) {
                 that.css3animate(currDiv, {
@@ -641,7 +668,8 @@ aUX.ui = (function () {
                         that.css3animate(oldDiv, {
                             x: 0,
                             y: 0,
-                            time: "1ms"
+                            time: "1ms",
+							callback:function(){oldDiv.style.display='none';}
                         });
                         currDiv.style.zIndex = 2;
                         oldDiv.style.zIndex = 1;
@@ -657,7 +685,8 @@ aUX.ui = (function () {
                         that.css3animate(oldDiv, {
                             x: 0,
                             y: 0,
-                            time: "1ms"
+                            time: "1ms",
+							callback:function(){oldDiv.style.display='none';}
                         });
                     }
                 });
@@ -676,6 +705,8 @@ aUX.ui = (function () {
             }
         },
         flipTransition: function (oldDiv, currDiv, back) {
+			oldDiv.style.display="block";
+			currDiv.style.display="block";
             var that = this
             if (back) {
                 that.css3animate(currDiv, {
@@ -699,7 +730,8 @@ aUX.ui = (function () {
                         that.css3animate(oldDiv, {
                             x: 0,
                             time: "1ms",
-                            opacity: 1
+                            opacity: 1,
+							callback:function(){oldDiv.style.display='none';}
                         });
                         currDiv.style.zIndex = 2;
                         oldDiv.style.zIndex = 1;
@@ -717,7 +749,8 @@ aUX.ui = (function () {
                         that.css3animate(oldDiv, {
                             x: 0,
                             y: 0,
-                            time: "1ms"
+                            time: "1ms",
+							callback:function(){oldDiv.style.display='none';}
                         });
                     }
                 });
@@ -736,6 +769,8 @@ aUX.ui = (function () {
             }
         },
         fadeTransition: function (oldDiv, currDiv, back) {
+			oldDiv.style.display="block";
+			currDiv.style.display="block";
             var that = this
             if (back) {
                 that.css3animate(currDiv, {
@@ -750,7 +785,9 @@ aUX.ui = (function () {
                         that.css3animate(oldDiv, {
                             x: 0,
                             time: "1ms",
-                            opacity: 1
+                            opacity: 1,
+							callback:function(){oldDiv.style.display='none';}
+							
                         });
                         currDiv.style.zIndex = 2;
                         oldDiv.style.zIndex = 1;
@@ -766,7 +803,8 @@ aUX.ui = (function () {
                         that.css3animate(oldDiv, {
                             x: 0,
                             y: 0,
-                            time: "1ms"
+                            time: "1ms",
+							callback:function(){oldDiv.style.display='none';}
                         });
                     }
                 });
@@ -785,6 +823,8 @@ aUX.ui = (function () {
             }
         },
         popTransition: function (oldDiv, currDiv, back) {
+			oldDiv.style.display="block";
+			currDiv.style.display="block";
             var that = this
             if (back) {
                 that.css3animate(currDiv, {
@@ -800,7 +840,8 @@ aUX.ui = (function () {
                     callback: function () {
                         that.css3animate(oldDiv, {
                             x: 0,
-                            time: "1ms"
+                            time: "1ms",
+							callback:function(){oldDiv.style.display='none';}
                         });
                         currDiv.style.zIndex = 2;
                         oldDiv.style.zIndex = 1;
@@ -816,7 +857,8 @@ aUX.ui = (function () {
                         that.css3animate(oldDiv, {
                             x: 0,
                             y: 0,
-                            time: "1ms"
+                            time: "1ms",
+							callback:function(){oldDiv.style.display='none';}
                         });
                     }
                 });
