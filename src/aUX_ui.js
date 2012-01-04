@@ -171,12 +171,13 @@ aUX.ui = (function () {
             el.childNodes[0].innerHTML = content;
             this.updateAnchors(el);
         },
-        addContentDiv: function (el, content, refresh, refreshFunc) {
+        addContentDiv: function (el, content, title,refresh, refreshFunc) {
             var myEl = document.getElementById(el);
             if (!myEl) {
                 var newDiv = document.createElement("div");
                 newDiv.id = el;
                 newDiv.innerHTML = content;
+				newDiv.title=title;
             } else {
                 newDiv = myEl;
             }

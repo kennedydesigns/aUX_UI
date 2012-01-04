@@ -61,9 +61,9 @@ We have three special registered div blocks for your layout based off id's.  The
     <script>AMUi.updateContentDiv("login","New Login HTML");
 	
 
-* To dynamically add a new div, you can call the function addContentDiv(_id_,_content_);
+* To dynamically add a new div, you can call the function addContentDiv(_id_,title,_content_);
 
-    <script>AMUi.addContentDiv("newdiv","This is some new html");
+    <script>AMUi.addContentDiv("newdiv","New Div","This is some new html");
 	
 
 * To navigate to a a page transition via javascript, you can call the function loadContent(_id_,clearHistory,backbutton,transition)
